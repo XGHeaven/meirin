@@ -1,0 +1,9 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "@xgheaven/tslint-config-xgheaven"
+    ],
+    "jsRules": {},
+    "rules": {},
+    "rulesDirectory": []
+}
