@@ -1,5 +1,5 @@
 import { HitStatus, Limiter } from '../src/limiter'
-import { sleep } from './utils'
+import { loop$, sleep } from './utils'
 
 let lmt: Limiter
 
@@ -86,11 +86,11 @@ describe('request', () => {
             app: 'app1',
         }
 
-        for (let i = 0; i < 10; i++) {
+        await loop$(10, async i => {
             const res = await limiter.request(entity)
             expect(res.allowed).toBeTruthy()
             expect(res.times).toEqual(i + 1)
-        }
+        })
 
         const status = await limiter.request(entity)
         expect(status.allowed).toBeFalsy()
@@ -122,16 +122,16 @@ describe('request', () => {
         const allowed = wantAllowed.bind(null, entity)
         const disallowed = wantDisallowed.bind(null, entity)
 
-        for (let i = 0; i < 5; i++) {
+        await loop$(5, async i => {
             await allowed({times: i + 1})
-        }
+        })
         await disallowed({times: 5})
 
         await sleep(1000)
 
-        for (let i = 0; i < 3; i++) {
+        await loop$(3, async i => {
             await allowed({times: 5 + i + 1})
-        }
+        })
         await disallowed({times: 8})
 
         await sleep(1000)
@@ -151,26 +151,26 @@ describe('request', () => {
         const allowed = wantAllowed.bind(null, entity)
         const disallowed = wantDisallowed.bind(null, entity)
 
-        for (let i = 0; i < 10; i++) {
+        await loop$(10, async i => {
             await allowed({times: i + 1})
-        }
+        })
 
         await disallowed({times: 10})
 
         // wait the first expires
         await sleep(1000)
 
-        for (let i = 0; i < 5; i++) {
+        await loop$(5, async i => {
             await allowed({times: 10 + i + 1})
-        }
+        })
 
         disallowed({times: 15, limit: 15})
 
         await sleep(1000)
 
-        for (let i = 0; i < 5; i++) {
+        await loop$(5, async i => {
             await allowed({times: 15 + i + 1})
-        }
+        })
 
         await disallowed({times: 20, limit: 20})
 
@@ -185,13 +185,13 @@ describe('request', () => {
             limitation: '10/1s',
         })
 
-        for (let i = 0; i < 20; i++) {
+        await loop$(20, async i => {
             await wantAllowed({}, {times: 0, limit: Infinity})
-        }
+        })
 
-        for (let i = 0; i < 10; i++) {
+        await loop$(10, async i => {
             await wantAllowed({app: 'Automobili Lamborghini S.p.A'}, {times: i + 1})
-        }
+        })
 
         await wantDisallowed({app: 'Automobili Lamborghini S.p.A'})
     })
@@ -199,9 +199,9 @@ describe('request', () => {
 
 describe('hit', () => {
     it('if no rules match get a default status', async () => {
-        for (let i = 0; i < 20; i++) {
+        await loop$(20, async i => {
             await wantHitAllowed({app: 'app'}, {times: 0, limit: Infinity})
-        }
+        })
     })
 
     it('cannot change status', async () => {
@@ -214,13 +214,13 @@ describe('hit', () => {
             app: 'app',
         }
 
-        for (let i = 0; i < 9; i++) {
+        await loop$(9, async i => {
             await wantAllowed(entity, {times: i + 1})
-        }
+        })
 
-        for (let i = 0; i < 5; i++) {
+        await loop$(5, async i => {
             await wantHitAllowed(entity, {times: 9})
-        }
+        })
 
         await wantAllowed(entity, {times: 10})
         await wantHitDisallowed(entity, {times: 10})

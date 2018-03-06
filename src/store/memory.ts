@@ -1,17 +1,33 @@
 import { ItemInfo, Store } from './store'
 
-interface MemoryItem {
+export interface MemoryItem {
     value: number,
     createdAt: number,
     expires: number,
     modifiedAt: number,
 }
 
+export interface MemoryStoreOptions {
+    gcCounter?: number,
+    gcLimit?: number,
+    autoGc?: boolean,
+}
+
+const GcLimit = 1e4
+const GcCounter = 1e3 + 7
+
 export class MemoryStore extends Store {
     store: Map<string, MemoryItem> = new Map()
+    counter: number = 0
+    autoGc = true
+    gcLimit = GcLimit
+    gcCounter = GcCounter
 
-    constructor() {
+    constructor(options: MemoryStoreOptions = {}) {
         super()
+        this.autoGc = options.autoGc || this.autoGc
+        this.gcLimit = options.gcLimit || this.gcLimit
+        this.gcCounter = options.gcCounter || this.gcCounter
     }
 
     async has(key: string): Promise<boolean> {
@@ -69,6 +85,14 @@ export class MemoryStore extends Store {
             memItem.expires = expires
         }
 
+        if (this.autoGc) {
+            this.counter++
+            if (this.counter >= this.gcCounter) {
+                this.gc()
+                this.counter = 0
+            }
+        }
+
         return {
             key,
             ...memItem,
@@ -81,6 +105,29 @@ export class MemoryStore extends Store {
 
     async clean(): Promise<void> {
         this.store.clear()
+    }
+
+    gc() {
+        const it = this.store.keys()
+        const expiredKeys = []
+        let count = 0
+        do {
+            const data = it.next()
+            if (data.done) {
+                break
+            }
+            const key = data.value
+            const item = this.store.get(key) as MemoryItem
+
+            if (!isAlive(item)) {
+                expiredKeys.push(key)
+                count++
+            }
+        } while (count < this.gcLimit)
+
+        for (const key of expiredKeys) {
+            this.store.delete(key)
+        }
     }
 }
 

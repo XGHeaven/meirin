@@ -1,7 +1,6 @@
 import { MemoryStore } from '../../src/store/memory'
 import { ItemInfo } from '../../src/store/store'
-import { sleep } from '../utils'
-import set = Reflect.set
+import { loop, loop$, sleep } from '../utils'
 
 let store: MemoryStore
 
@@ -156,4 +155,29 @@ it('clean', async () => {
     await store.clean()
     expect(await store.has(key1)).toBeFalsy()
     expect(await store.has(key2)).toBeFalsy()
+})
+
+describe('gc', () => {
+    it('gc',  async () => {
+        await loop$(100, async i => {
+            await store.set(`key${i}`, i, 1000)
+        })
+        await sleep(1000)
+        store.gc()
+        expect(store.store.size).toBe(0)
+    })
+
+    it('run gc after call #set several times', async () => {
+        store = new MemoryStore({
+            gcCounter: 10,
+        })
+        const gcMock = jest.fn()
+        store.gc = gcMock
+        await loop$(10, async i => {
+            await store.set(`key${i}`, i)
+        })
+
+        expect(gcMock.mock.calls.length).toBe(1)
+        expect(store.counter).toBe(0)
+    })
 })
