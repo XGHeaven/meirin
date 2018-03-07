@@ -1,9 +1,7 @@
 export interface ItemInfo {
     key: string,
     value: number,
-    expires: number,
-    createdAt: number,
-    modifiedAt: number,
+    expiredAt: number,
 }
 
 export abstract class Store {

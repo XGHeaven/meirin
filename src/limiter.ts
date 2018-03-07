@@ -53,10 +53,10 @@ function limitedStatus(allowed: boolean, entity: Entity, rule: Rule, item: ItemI
         allowed,
         entity,
         rule,
-        endAt: item.createdAt + item.expires,
+        endAt: item.expiredAt,
         expires: limit.duration,
         limit: limit.threshold,
-        startAt: item.createdAt,
+        startAt: item.expiredAt - limit.duration,
         times: item.value,
     }
 }
@@ -107,9 +107,7 @@ export class Limiter {
                 if (!item) {
                     item = {
                         key,
-                        createdAt: Date.now(),
-                        expires: limitation.duration,
-                        modifiedAt: Date.now(),
+                        expiredAt: limitation.duration + Date.now(),
                         value: 0,
                     }
                 }

@@ -45,7 +45,8 @@ export class MemoryStore extends Store {
         const memItem = this.store.get(key) as MemoryItem
         return {
             key,
-            ...memItem,
+            expiredAt: memItem.createdAt + memItem.expires,
+            value: memItem.value,
         }
     }
 
@@ -58,7 +59,8 @@ export class MemoryStore extends Store {
         memItem.modifiedAt = Date.now()
         return {
             key,
-            ...memItem,
+            expiredAt: memItem.createdAt + memItem.expires,
+            value: memItem.value,
         }
     }
 
@@ -95,7 +97,8 @@ export class MemoryStore extends Store {
 
         return {
             key,
-            ...memItem,
+            expiredAt: memItem.createdAt + memItem.expires,
+            value: memItem.value,
         }
     }
 
