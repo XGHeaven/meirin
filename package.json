@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A powerful frequency limitation library",
   "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "test": "jest",
     "play": "ts-node playground.ts",
