@@ -5,20 +5,12 @@ export interface ItemInfo {
 }
 
 export abstract class Store {
-    async has(key: string): Promise<boolean> {
-        throw new Error(`please implement ${this.constructor.name}#has method`)
-    }
-
-    async get(key: string): Promise<ItemInfo | null> {
+    async get(key: string): Promise<number> {
         throw new Error(`please implement ${this.constructor.name}#get method`)
     }
 
-    async inc(key: string, expires?: number): Promise<ItemInfo> {
+    async inc(key: string, expires?: number): Promise<number> {
         throw new Error(`please implement ${this.constructor.name}#inc method`)
-    }
-
-    async set(key: string, times: number, expires: number): Promise<ItemInfo> {
-        throw new Error(`please implement ${this.constructor.name}#set method`)
     }
 
     async wipe(key: string): Promise<boolean> {

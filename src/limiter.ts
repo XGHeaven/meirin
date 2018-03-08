@@ -25,39 +25,33 @@ export interface HitStatus {
     expires: number,
     times: number,
     limit: number,
-    startAt: number,
-    endAt: number,
 }
 
-const findMinGroup = reduce(minBy((group: [ItemInfo, CompiledRule, RuleLimitation]) =>
-    group[2].threshold - group[0].value))
+const findMinGroup = reduce(minBy((group: [number, CompiledRule, RuleLimitation]) =>
+    group[2].threshold - group[0]))
 
 function emptyStatus(entity: Entity): HitStatus {
     return {
         entity,
         allowed: true,
-        endAt: Date.now(),
         expires: Infinity,
         limit: Infinity,
         rule: {
             expression: '',
             limitation: '',
         },
-        startAt: Date.now(),
         times: 0,
     }
 }
 
-function limitedStatus(allowed: boolean, entity: Entity, rule: Rule, item: ItemInfo, limit: RuleLimitation) {
+function limitedStatus(allowed: boolean, entity: Entity, rule: Rule, times: number, limit: RuleLimitation) {
     return {
         allowed,
         entity,
         rule,
-        endAt: item.expiredAt,
+        times,
         expires: limit.duration,
         limit: limit.threshold,
-        startAt: item.expiredAt - limit.duration,
-        times: item.value,
     }
 }
 
@@ -105,11 +99,7 @@ export class Limiter {
                 const key = this.getStoreKey(rule, entity, index)
                 let item = await this.store.get(key)
                 if (!item) {
-                    item = {
-                        key,
-                        expiredAt: limitation.duration + Date.now(),
-                        value: 0,
-                    }
+                    item = 0
                 }
 
                 if (!canStepIn(item, limitation)) {
@@ -135,13 +125,14 @@ export class Limiter {
         for (const rule of filteredRules) {
             for (const [index, limitation] of rule.limitations.entries()) {
                 const key = this.getStoreKey(rule, entity, index)
-                const item = await this.store.get(key)
-                if (!item) {
+                const times = await this.store.get(key)
+
+                if (!times) {
                     continue
                 }
 
-                if (!canStepIn(item, limitation)) {
-                    return limitedStatus(false, entity, rule.rule, item, limitation)
+                if (!canStepIn(times, limitation)) {
+                    return limitedStatus(false, entity, rule.rule, times, limitation)
                 }
             }
         }
@@ -151,15 +142,15 @@ export class Limiter {
         for (const rule of filteredRules) {
             for (const [index, limitation] of rule.limitations.entries()) {
                 const key = this.getStoreKey(rule, entity, index)
-                promises.push(this.store.inc(key, limitation.duration).then(item => [item, rule, limitation]))
+                promises.push(this.store.inc(key, limitation.duration).then(times => [times, rule, limitation]))
             }
         }
 
         const itemsGroups = await Promise.all(promises)
 
-        const [minItem, minRule, minLimitation] = findMinGroup(itemsGroups[0], itemsGroups)
+        const [minTimes, minRule, minLimitation] = findMinGroup(itemsGroups[0], itemsGroups)
 
-        return limitedStatus(true, entity, minRule.rule, minItem, minLimitation)
+        return limitedStatus(true, entity, minRule.rule, minTimes, minLimitation)
     }
 
     async clear(): Promise<void> {

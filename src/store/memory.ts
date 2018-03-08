@@ -41,30 +41,22 @@ export class MemoryStore extends Store {
     }
 
     async get(key: string) {
-        if (!await this.has(key)) { return null }
+        if (!await this.has(key)) { return 0 }
         const memItem = this.store.get(key) as MemoryItem
-        return {
-            key,
-            expiredAt: memItem.createdAt + memItem.expires,
-            value: memItem.value,
-        }
+        return memItem.value
     }
 
-    async inc(key: string, expires?: number): Promise<ItemInfo> {
+    async inc(key: string, expires?: number) {
         if (!await this.has(key)) {
             return await this.set(key, 1, expires)
         }
         const memItem = this.store.get(key) as MemoryItem
         memItem.value++
         memItem.modifiedAt = Date.now()
-        return {
-            key,
-            expiredAt: memItem.createdAt + memItem.expires,
-            value: memItem.value,
-        }
+        return memItem.value
     }
 
-    async set(key: string, times: number, expires?: number): Promise<ItemInfo> {
+    async set(key: string, times: number, expires?: number) {
         let memItem: MemoryItem | null = null
         if (this.store.has(key)) {
             memItem = this.store.get(key) as MemoryItem
@@ -95,11 +87,7 @@ export class MemoryStore extends Store {
             }
         }
 
-        return {
-            key,
-            expiredAt: memItem.createdAt + memItem.expires,
-            value: memItem.value,
-        }
+        return memItem.value
     }
 
     async wipe(key: string) {

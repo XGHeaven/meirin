@@ -1,6 +1,6 @@
 {
   "name": "meirin",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A powerful frequency limitation library",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -8,7 +8,8 @@
     "test": "jest",
     "play": "ts-node playground.ts",
     "build": "tsc",
-    "bench": "matcha"
+    "bench": "matcha",
+    "prepublish": "npm run build"
   },
   "author": "XGHeaven",
   "license": "MIT",

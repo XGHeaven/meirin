@@ -8,13 +8,19 @@ beforeEach(() => {
     store = new MemoryStore()
 })
 
+describe('get', async () => {
+    it('should return 0 if key not exist', async () => {
+        expect(await store.get('key')).toBe(0)
+    })
+})
+
 describe('set value', () => {
     it('to change value', async () => {
         const key = 'Bavarian Motor Work'
         const setItem1 = await store.set(key, 1)
-        expect(setItem1.value).toBe(1)
+        expect(setItem1).toBe(1)
         const setItem2 = await store.set(key, 2)
-        expect(setItem2.value).toBe(2)
+        expect(setItem2).toBe(2)
     })
 
     it('with expires', async () => {
@@ -22,12 +28,10 @@ describe('set value', () => {
         const value = 3
         const expires = 100
         await store.set(key, value, expires)
-        const item = await store.get(key) as ItemInfo
-        expect(item).not.toBeNull()
-        expect(item.value).toEqual(value)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + expires)
+        const item = await store.get(key)
+        expect(item).toEqual(value)
         await sleep(expires + 200)
-        expect(await store.get(key)).toBeNull()
+        expect(await store.get(key)).toBe(0)
     })
 
     it('without expires default is Infinity', async () => {
@@ -36,38 +40,29 @@ describe('set value', () => {
         const setItem = await store.set(key, value)
         const getItem = await store.get(key)
         expect(setItem).toEqual(getItem)
-        expect(setItem.value).toBe(value)
-        expect(setItem.expiredAt).toBe(Infinity)
+        expect(setItem).toBe(value)
     })
 
     it('again do not change expires', async () => {
         const key = 'key'
         await store.set(key, 1, 1000)
-        let item = await store.get(key) as ItemInfo
-        expect(item).not.toBeNull()
-        expect(item.value).toEqual(1)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 1000)
+        let item = await store.get(key)
+        expect(item).toEqual(1)
         await store.set(key, 2)
-        item = await store.get(key) as ItemInfo
-        expect(item).not.toBeNull()
-        expect(item.value).toEqual(2)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 1000)
+        item = await store.get(key)
+        expect(item).toEqual(2)
     })
 
     it('again change expires', async () => {
         const key = 'key'
         await store.set(key, 1, 2000)
-        let item = await store.get(key) as ItemInfo
-        expect(item).not.toBeNull()
-        expect(item.value).toEqual(1)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 2000)
+        let item = await store.get(key)
+        expect(item).toEqual(1)
         await store.set(key, 2, 1000)
-        item = await store.get(key) as ItemInfo
-        expect(item).not.toBeNull()
-        expect(item.value).toEqual(2)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 2000)
+        item = await store.get(key)
+        expect(item).toEqual(2)
         await sleep(1200)
-        expect(await store.get(key)).toBeNull()
+        expect(await store.get(key)).toBe(0)
     })
 })
 
@@ -77,33 +72,27 @@ describe('inc a value', () => {
     it('set value to 1 with Infinity expires if not exist, ', async () => {
         expect(await store.has(key)).toBeFalsy()
         const incItem = await store.inc(key)
-        expect(incItem.value).toBe(1)
-        expect(incItem.expiredAt).toBe(Infinity)
+        expect(incItem).toBe(1)
     })
 
     it('with a expires if not exist, ', async () => {
         expect(await store.has(key)).toBeFalsy()
         let item = await store.inc(key, 100)
-        expect(item.value).toBe(1)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 100)
+        expect(item).toBe(1)
         item = await store.inc(key, 100)
-        expect(item.value).toBe(2)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 100)
+        expect(item).toBe(2)
         await sleep(100 + 100)
         item = await store.inc(key, 100)
-        expect(item.value).toBe(1)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 100)
+        expect(item).toBe(1)
     })
 
     it('ignore expires when exist', async () => {
         let item = await store.inc(key, 100)
         item = await store.inc(key, 1000)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 100)
-        expect(item.value).toBe(2)
+        expect(item).toBe(2)
         await sleep(100 + 200)
         item = await store.inc(key, 100)
-        expect(item.value).toBe(1)
-        expect(item.expiredAt).toBeLessThanOrEqual(Date.now() + 100)
+        expect(item).toBe(1)
     })
 })
 

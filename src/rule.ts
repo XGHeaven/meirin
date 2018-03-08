@@ -87,6 +87,6 @@ export function parseRuleLimitation(limitation: string): RuleLimitations {
     }).sort((a, b) => a.duration - b.duration)
 }
 
-export function canStepIn(item: ItemInfo, limitation: RuleLimitation): boolean {
-    return item.value < limitation.threshold
+export function canStepIn(times: number, limitation: RuleLimitation): boolean {
+    return (times | 0) < limitation.threshold
 }
