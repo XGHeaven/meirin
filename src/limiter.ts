@@ -27,7 +27,9 @@ export interface HitStatus {
     limit: number,
 }
 
-const findMinGroup = reduce(minBy((group: [number, CompiledRule, RuleLimitation]) =>
+type SearchGroup = [number, CompiledRule, RuleLimitation] // [times, rule, limitation]
+
+const findMinGroup = reduce(minBy((group: SearchGroup) =>
     group[2].threshold - group[0]))
 
 function emptyStatus(entity: Entity): HitStatus {
@@ -92,7 +94,7 @@ export class Limiter {
             return emptyStatus(entity)
         }
 
-        const itemsGroups = []
+        const itemsGroups: SearchGroup[] = []
 
         for (const rule of filteredRules) {
             for (const [index, limitation] of rule.limitations.entries()) {
@@ -142,7 +144,9 @@ export class Limiter {
         for (const rule of filteredRules) {
             for (const [index, limitation] of rule.limitations.entries()) {
                 const key = this.getStoreKey(rule, entity, index)
-                promises.push(this.store.inc(key, limitation.duration).then(times => [times, rule, limitation]))
+                promises
+                    .push(this.store.inc(key, limitation.duration)
+                        .then(times => ([times, rule, limitation] as SearchGroup)))
             }
         }
 
