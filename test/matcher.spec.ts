@@ -1,4 +1,5 @@
-import { compileExpression, MatcherAllowedValueType } from '../src/matcher'
+import { compileExpression, Matcher, MatcherAllowedValueType } from '../src/matcher'
+import { Operators } from '../src/operator'
 
 describe('compile', () => {
     function doTest(tests: Array<{exp: string, dime: string, op: string, value: MatcherAllowedValueType}>) {
@@ -15,15 +16,15 @@ describe('compile', () => {
 
     it('without value & operator', () => {
         doTest([{
-            exp: 'app',
             dime: 'app',
-            value: '',
+            exp: 'app',
             op: '',
+            value: '',
         }, {
-            exp: ' ip ',
             dime: 'ip',
-            value: '',
+            exp: ' ip ',
             op: '',
+            value: '',
         }])
     })
 
@@ -31,9 +32,9 @@ describe('compile', () => {
         function buildTest(tests: Array<[string, string]>) {
             return tests.map(([expStr, value]) => ({
                 value,
+                dime: 'e',
                 exp: `e = ${expStr}`,
                 op: '=',
-                dime: 'e',
             }))
         }
 
@@ -51,9 +52,9 @@ describe('compile', () => {
         function buildTest(tests: Array<[string, number]>) {
             return tests.map(([expStr, value]) => ({
                 value,
+                dime: 'n',
                 exp: `n >= ${expStr}`,
                 op: '>=',
-                dime: 'n',
             }))
         }
 
@@ -69,10 +70,10 @@ describe('compile', () => {
     it('boolean value', () => {
         function buildTest(tests: Array<[string, boolean]>) {
             return tests.map(([exp, bool]) => ({
-                value: bool,
+                dime: 'bool',
                 exp: `bool = ${bool}`,
                 op: '=',
-                dime: 'bool',
+                value: bool,
             }))
         }
 
@@ -85,10 +86,10 @@ describe('compile', () => {
     it('regexp value', () => {
         function buildTests(tests: RegExp[]) {
             return tests.map(regexp => ({
-                value: regexp,
+                dime: 'regexp',
                 exp: `regexp = ${regexp.toString()}`,
                 op: '=',
-                dime: 'regexp',
+                value: regexp,
             }))
         }
 
@@ -103,8 +104,8 @@ describe('compile', () => {
         function buildTest(tests: string[]) {
             return tests.map(op => ({
                 op,
-                exp: `app ${op} value`,
                 dime: 'app',
+                exp: `app ${op} value`,
                 value: 'value',
             }))
         }
@@ -131,15 +132,15 @@ describe('compile', () => {
                 [],
                 ['123', '333', 333, /foo/gi, false, true],
             ],
+            '= \'yes\'': [
+                ['budui', 'haibu dui', 2, 3, /no/, false, true],
+                ['yes'],
+            ],
             '= 1': [
                 // false case
                 ['budui', 'hai shi bu dui', 2, 3, /bye/, false, true],
                 // true case
                 [1],
-            ],
-            '= \'yes\'': [
-                ['budui', 'haibu dui', 2, 3, /no/, false, true],
-                ['yes'],
             ],
             '>= 10': [
                 [],
@@ -168,10 +169,36 @@ describe('compile', () => {
     })
 })
 
-describe.skip('custom matcher', () => {
-    // TODO
-})
+describe('custom operator', () => {
+    it('should works', () => {
+        const ops: Operators = {
+            '=%=': (a: string, b: string) => a.toLowerCase() === b.toLowerCase(),
+        }
 
-describe.skip('custom operator', () => {
-    // TODO
+        const matcher = compileExpression('app =%= BlackPanther', ops) as Matcher
+
+        expect(matcher).not.toBeNull()
+
+        const trueCase = [
+            'BlackPanther',
+            'blackPanther',
+            'BlackPanthER',
+        ]
+        const falseCase = [
+            'lackPanther',
+            'Blackpanthe',
+        ]
+
+        for (const value of trueCase) {
+            expect(matcher.match({
+                app: value,
+            })).toBeTruthy()
+        }
+
+        for (const value of falseCase) {
+            expect(matcher.match({
+                app: value,
+            })).toBeFalsy()
+        }
+    })
 })

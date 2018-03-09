@@ -1,21 +1,18 @@
 import { minBy, reduce } from 'ramda'
 import { Entity } from './entity'
 import { MatcherFunction } from './matcher'
+import { OperatorFunction, Operators } from './operator'
 import {
     canStepIn, CompiledRule, CompiledRules, compileRule, filterRules, Rule, RuleLimitation, Rules,
 } from './rule'
 import { MemoryStore } from './store/memory'
 import { ItemInfo, Store } from './store/store'
 
-export interface LimiterOperatorMap {
-    [op: string]: MatcherFunction
-}
-
 export interface LimiterOptions {
     store?: Store,
     rules?: Rule[],
     prefix?: string, // TODO: 这个应该放到 Store 的配置当中
-    operator?: LimiterOperatorMap, // TODO
+    operators?: Operators,
 }
 
 export interface HitStatus {
@@ -59,6 +56,7 @@ function limitedStatus(allowed: boolean, entity: Entity, rule: Rule, times: numb
 
 export class Limiter {
     prefix: string
+    operators: Operators
 
     private store: Store
     private rules: CompiledRules = []
@@ -66,6 +64,7 @@ export class Limiter {
     constructor(options: LimiterOptions = {}) {
         this.store = options.store || new MemoryStore()
         this.prefix = options.prefix || ''
+        this.operators = options.operators || {}
         this.addRule(options.rules || [])
     }
 
@@ -75,7 +74,7 @@ export class Limiter {
                 this.addRule(r)
             }
         } else {
-            this.rules.push(compileRule(rule))
+            this.rules.push(compileRule(rule, this.operators))
         }
     }
 

@@ -3,10 +3,6 @@ import { loop$, sleep } from './utils'
 
 let lmt: Limiter
 
-beforeEach(() => {
-    lmt = new Limiter()
-})
-
 interface StatusAssertion extends Object {
     limit?: number,
     times?: number,
@@ -61,6 +57,25 @@ describe.skip('add rule', () => {
     it('single rule')
     it('rule array')
     it('overwrite rule if same id found')
+})
+
+describe('new Limiter()', () => {
+    it('should support custom operator', async () => {
+        lmt = new Limiter({
+            operators: {
+                '=%=': (a: string, b: string) => a.length === b.length,
+            },
+        })
+
+        lmt.addRule({
+            expression: 'app =%= app',
+            id: 'foo',
+            limitation: '10/1s',
+        })
+
+        expect((await lmt.hit({app: 'abb'})).limit).toBe(10)
+        expect((await lmt.hit({app: 'ab'})).limit).toBe(Infinity)
+    })
 })
 
 describe('request', () => {

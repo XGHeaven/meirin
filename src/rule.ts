@@ -5,6 +5,7 @@ import { ItemInfo } from './store/store'
 
 import ms = require('ms')
 import { Entity } from './entity'
+import { Operators } from './operator'
 
 const operators: Array<[string, number]> = [
     ['=', 100],
@@ -49,13 +50,13 @@ export interface CompiledRule {
 
 export type CompiledRules = CompiledRule[]
 
-export function compileRule(rule: Rule): CompiledRule {
+export function compileRule(rule: Rule, ops: Operators = {}): CompiledRule {
     let id = rule.id
 
-    const matcher = compileExpression(rule.expression)
+    const matcher = compileExpression(rule.expression, ops)
 
     if (matcher === null) {
-        throw new Error('cannot compile expression')
+        throw new Error(`Cannot compile expression "${rule.expression}"`)
     }
 
     if (!id) {
