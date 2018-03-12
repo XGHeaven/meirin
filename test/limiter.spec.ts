@@ -52,11 +52,56 @@ async function wantHitDisallowed(entity: any, expected: StatusAssertion = {}) {
     })
 }
 
-describe.skip('add rule', () => {
-    // TODO
-    it('single rule')
-    it('rule array')
-    it('overwrite rule if same id found')
+beforeEach(() => {
+    lmt = new Limiter()
+})
+
+describe('addRule', () => {
+    it('should add single rule', () => {
+        lmt.addRule({
+            expression: 'app',
+            id: 'foo',
+            limitation: '1/1s',
+        })
+
+        expect(lmt.getRules()).toHaveLength(1)
+    })
+
+    it('should add rules array', () => {
+        const baseRule = {
+            expression: 'app',
+            limitation: '1/1s',
+        }
+        lmt.addRule([
+            Object.assign({id: 'foo'}, baseRule),
+            Object.assign({id: 'bar'}, baseRule),
+        ])
+
+        expect(lmt.getRules()).toHaveLength(2)
+    })
+
+    it('should throw error if rule\'s id exist', () => {
+        const ruleWithoutID = {
+            expression: 'withoutID',
+            limitation: '1/1s',
+        }
+
+        const ruleWithID1 = {
+            expression: 'withID',
+            id: 'rule1',
+            limitation: '1/1s',
+        }
+
+        const ruleWithID2 = {
+            ...ruleWithID1,
+            id: 'rule2',
+        }
+
+        expect(() => lmt.addRule([ruleWithID1, ruleWithoutID])).not.toThrow()
+        expect(() => lmt.addRule(ruleWithoutID)).toThrow()
+        expect(() => lmt.addRule(ruleWithID1)).toThrow()
+        expect(() => lmt.addRule(ruleWithID2)).not.toThrow()
+    })
 })
 
 describe('new Limiter()', () => {

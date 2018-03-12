@@ -74,7 +74,11 @@ export class Limiter {
                 this.addRule(r)
             }
         } else {
-            this.rules.push(compileRule(rule, this.operators))
+            const compiledRule = compileRule(rule, this.operators)
+            if (this.rules.findIndex(r => r.id === compiledRule.id) !== -1) {
+                throw new Error(`rule ${compiledRule.rule.expression}(${compiledRule.rule.limitation}) exists`)
+            }
+            this.rules.push(compiledRule)
         }
     }
 
