@@ -1,9 +1,3 @@
-export interface ItemInfo {
-    key: string,
-    value: number,
-    expiredAt: number,
-}
-
 export abstract class Store {
     async get(key: string): Promise<number> {
         throw new Error(`please implement ${this.constructor.name}#get method`)

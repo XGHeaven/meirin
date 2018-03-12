@@ -9,7 +9,8 @@
     "play": "ts-node playground.ts",
     "build": "tsc",
     "bench": "matcha",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "lint": "tslint -p ."
   },
   "author": "XGHeaven",
   "license": "MIT",

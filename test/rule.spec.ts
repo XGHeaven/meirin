@@ -1,5 +1,4 @@
-import { parseRuleLimitation, RuleLimitation, RuleLimitations } from '../src/rule'
-import Test = jest.Test
+import { parseRuleLimitation, RuleLimitations } from '../src/rule'
 
 describe('parse rule limitation', () => {
     interface TestLimitation {

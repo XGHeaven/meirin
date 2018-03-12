@@ -1,6 +1,5 @@
 import { MemoryStore } from '../../src'
-import { ItemInfo } from '../../src/store/store'
-import { loop, loop$, sleep } from '../utils'
+import { loop$, sleep } from '../utils'
 
 let store: MemoryStore
 

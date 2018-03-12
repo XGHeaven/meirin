@@ -1,12 +1,9 @@
 import { minBy, reduce } from 'ramda'
 import { Entity } from './entity'
-import { MatcherFunction } from './matcher'
-import { OperatorFunction, Operators } from './operator'
-import {
-    canStepIn, CompiledRule, CompiledRules, compileRule, filterRules, Rule, RuleLimitation, Rules,
-} from './rule'
+import { Operators } from './operator'
+import { canStepIn, CompiledRule, CompiledRules, compileRule, filterRules, Rule, RuleLimitation, Rules } from './rule'
 import { MemoryStore } from './store/memory'
-import { ItemInfo, Store } from './store/store'
+import { Store } from './store/store'
 
 export interface LimiterOptions {
     store?: Store,

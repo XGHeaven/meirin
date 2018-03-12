@@ -1,4 +1,4 @@
-import { ItemInfo, Store } from './store'
+import { Store } from './store'
 
 export interface MemoryItem {
     value: number,

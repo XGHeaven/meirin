@@ -1,11 +1,10 @@
 import { createHash } from 'crypto'
 import { ascend, compose, descend, filter, path, prop, sortWith, uniqBy } from 'ramda'
+import { Entity } from './entity'
 import { compileExpression, Matcher } from './matcher'
-import { ItemInfo } from './store/store'
+import { Operators } from './operator'
 
 import ms = require('ms')
-import { Entity } from './entity'
-import { Operators } from './operator'
 
 const operators: Array<[string, number]> = [
     ['=', 100],
