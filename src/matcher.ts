@@ -33,7 +33,7 @@ export interface Matcher {
     match: (entity: any) => boolean,
 }
 
-export function compileExpression(expr: string, ops: Operators = {}): Matcher | null {
+export function compileExpression(expr: string, ops: Operators = {}): Matcher {
     expr = expr.trim()
     const matches = expr.match(exprRegexp)
     let dimension = ''
@@ -43,8 +43,6 @@ export function compileExpression(expr: string, ops: Operators = {}): Matcher | 
     if (!matches) {
         if (expr.length) {
             dimension = expr
-        } else {
-            return null
         }
     } else {
         dimension = parseExpressionValue(matches[1]).toString()
@@ -63,9 +61,6 @@ export function compileExpression(expr: string, ops: Operators = {}): Matcher | 
 
 export function parseExpressionValue(value: string): MatcherAllowedValueType {
     value = value.trim()
-    if (!value.length) {
-        return value
-    }
     if (value === 'true') {
         return true
     }

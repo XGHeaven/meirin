@@ -55,9 +55,9 @@ export function compileRule(rule: Rule, ops: Operators = {}): CompiledRule {
 
     const matcher = compileExpression(rule.expression, ops)
 
-    if (matcher === null) {
-        throw new Error(`Cannot compile expression "${rule.expression}"`)
-    }
+    // if (matcher === null) {
+    //     throw new Error(`Cannot compile expression "${rule.expression}"`)
+    // }
 
     if (!id) {
         const hash = createHash('md5')
@@ -89,5 +89,5 @@ export function parseRuleLimitation(limitation: string): RuleLimitations {
 }
 
 export function canStepIn(times: number, limitation: RuleLimitation): boolean {
-    return (times | 0) < limitation.threshold
+    return times < limitation.threshold
 }

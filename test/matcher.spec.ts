@@ -45,6 +45,7 @@ describe('compile', () => {
             ['"string', '"string'],
             ['233eef', '233eef'],
             ['9e5f', '9e5f'],
+            ['/a[bbb/gi', '/a[bbb/gi'],
         ]))
     })
 
