@@ -163,6 +163,38 @@ describe('request', () => {
         expect(newStatus.times).toBe(1)
     })
 
+    it('many single dimension rules create a hole', async () => {
+        const limiter = new Limiter()
+        limiter.addRule([{
+            expression: 'app',
+            limitation: '5/1s',
+        }, {
+            expression: 'app=hole',
+            limitation: 'Infinity/Infinity',
+        }])
+
+        const entity1 = {
+            app: 'packed',
+        }
+        const entity2 = {
+            app: 'hole',
+        }
+
+        await loop$(5, async i => {
+            const status = await limiter.request(entity1)
+            expect(status.allowed).toBeTruthy()
+            expect(status.limit).toBe(5)
+        })
+
+        expect((await limiter.request(entity1)).allowed).toBeFalsy()
+
+        await loop$(10, async i => {
+            const status = await limiter.request(entity2)
+            expect(status.allowed).toBeTruthy()
+            expect(status.limit).toBe(Infinity)
+        })
+    })
+
     it('multipart dimension', async () => {
         lmt.addRule([{
             expression: 'app',

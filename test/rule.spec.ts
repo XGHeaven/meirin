@@ -1,4 +1,5 @@
-import { parseRuleLimitation, RuleLimitations } from '../src/rule'
+import { Rule } from '../src'
+import { parseRuleLimitation, RuleLimitations, filterRules, compileRule } from '../src/rule'
 
 describe('parse rule limitation', () => {
     interface TestLimitation {
@@ -76,5 +77,36 @@ describe('parse rule limitation', () => {
                 ms: 10 * 1000,
             }],
         ]))
+    })
+})
+
+describe('filterRules', async () => {
+    it('single dimension rule with hold', async () => {
+        const rules = [compileRule({
+            expression: 'app!=hold',
+            limitation: '5/1s',
+        })]
+
+        let filtered = filterRules(rules, { app: 'hold' })
+        expect(filtered).toEqual([])
+
+        filtered = filterRules(rules, { app: 'pack' })
+        expect(filtered).toEqual(rules)
+    })
+
+    it('more single dimension rule with hole', async () => {
+        const rules = ([{
+            expression: 'app',
+            limitation: '5/1s',
+        }, {
+            expression: 'app=hole',
+            limitation: 'Infinity/Infinity',
+        }] as Rule[]).map(rule => compileRule(rule))
+
+        let filtered = filterRules(rules, { app: 'hole' })
+        expect(filtered).toEqual([rules[1]])
+
+        filtered = filterRules(rules, { app: 'packed' })
+        expect(filtered).toEqual([rules[0]])
     })
 })
